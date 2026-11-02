@@ -8,6 +8,9 @@ import router from './router'
 import { setAuthLostHandler } from '@/api/client'
 import { useAuthStore } from '@/stores/auth'
 
+// Po tylu ms montujemy aplikację nawet wtedy, gdy backend nie odpowiada.
+const MOUNT_TIMEOUT_MS = 3000
+
 const app = createApp(App)
 
 app.use(createPinia())
@@ -22,4 +25,7 @@ setAuthLostHandler(() => {
   }
 })
 
-app.mount('#app')
+// Montujemy dopiero po pierwszej nawigacji (profil + widok załadowane),
+// dzięki czemu nie widać przeskoków z "pustego" stanu do gotowej strony.
+const timeout = new Promise((resolve) => setTimeout(resolve, MOUNT_TIMEOUT_MS))
+Promise.race([router.isReady().catch(() => {}), timeout]).then(() => app.mount('#app'))

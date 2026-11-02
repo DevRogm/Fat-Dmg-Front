@@ -7,11 +7,9 @@ import { formatDateTime, formatNumber } from '@/utils/format'
 defineProps({
   /** 'guest' | 'inactive' | 'active' */
   status: { type: String, required: true },
-  /** Czy trwa event (żeby pokazać sekcję "w evencie"). */
-  hasEvent: { type: Boolean, default: false },
   /** Mój wiersz z tabeli aktualnego eventu albo null, jeśli nie dołączyłem. */
   row: { type: Object, default: null },
-  /** Moje miejsce w tabeli (1-based) albo null. */
+  /** Moje miejsce w tabeli (1-based) albo null, gdy brak wyniku. */
   position: { type: Number, default: null },
   participants: { type: Number, default: 0 },
   /** @type {import('vue').PropType<import('@/api/profiles').ProfileScore[]>} */
@@ -34,25 +32,22 @@ defineProps({
     </p>
 
     <template v-else>
-      <div v-if="hasEvent" class="current">
-        <template v-if="row">
-          <p class="position">
-            Miejsce <strong>#{{ position }}</strong>
-            <span class="muted"> z {{ participants }}</span>
-          </p>
-          <p class="best">
-            <span class="muted">Najlepszy wynik w evencie</span>
-            <strong>{{ formatNumber(row.best_damage) }}</strong>
-          </p>
-          <TankBadge v-if="row.best_tank" :tank="row.best_tank" />
-        </template>
-        <p v-else class="muted">Nie bierzesz jeszcze udziału w tym evencie.</p>
+      <div class="current">
+        <p class="position">
+          Miejsce <strong>{{ position ? `#${position}` : '—' }}</strong>
+          <span v-if="position" class="muted"> z {{ participants }}</span>
+        </p>
+        <p class="best">
+          <span class="muted">Najlepszy wynik w evencie</span>
+          <strong>{{ formatNumber(row?.best_damage) }}</strong>
+        </p>
+        <TankBadge v-if="row?.best_tank" :tank="row.best_tank" />
       </div>
 
       <h3 class="subtitle">Twoje najlepsze wyniki</h3>
 
       <p v-if="error" class="alert" role="alert">{{ error }}</p>
-      <p v-else-if="scores.length === 0" class="muted">Brak zapisanych wyników.</p>
+      <p v-else-if="scores.length === 0" class="muted">—</p>
 
       <ol v-else class="scores">
         <li

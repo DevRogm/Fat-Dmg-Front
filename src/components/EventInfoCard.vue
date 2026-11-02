@@ -21,7 +21,7 @@ const phase = computed(() => {
   if (now.value < end) {
     return { state: 'running', label: 'Do końca', value: formatDuration(end - now.value) }
   }
-  return { state: 'ended', label: 'Czas minął', value: 'Czekamy na podsumowanie' }
+  return { state: 'ended', label: 'Event zakończony', value: 'Trwa podliczanie wyników' }
 })
 </script>
 
@@ -62,7 +62,10 @@ const phase = computed(() => {
       <p class="muted author">Organizator: {{ event.author }}</p>
     </template>
 
-    <p v-else class="muted">Obecnie nie trwa żaden event. Zajrzyj tu później.</p>
+    <template v-else>
+      <p class="muted">Obecnie nie trwa żaden event. Zajrzyj tu później.</p>
+      <slot name="empty" />
+    </template>
   </section>
 </template>
 

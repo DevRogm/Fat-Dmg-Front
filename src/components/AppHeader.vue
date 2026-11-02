@@ -48,6 +48,9 @@ async function logout() {
       <nav id="main-nav" class="nav" :class="{ open: menuOpen }" aria-label="Główna nawigacja">
         <div class="nav-links">
           <RouterLink :to="{ name: 'home' }">Start</RouterLink>
+          <RouterLink :to="{ name: 'events' }">Wydarzenia</RouterLink>
+          <RouterLink :to="{ name: 'stats' }">Statystyki</RouterLink>
+          <RouterLink :to="{ name: 'info' }">Informacje</RouterLink>
           <template v-if="auth.isAuthenticated">
             <RouterLink :to="{ name: 'profile' }">Profil</RouterLink>
             <RouterLink v-if="needsActivation" :to="{ name: 'activate' }">Aktywacja</RouterLink>
@@ -96,7 +99,7 @@ async function logout() {
 
 .brand-logo {
   display: block;
-  height: 6rem;
+  height: 8rem;
   width: auto;
 }
 

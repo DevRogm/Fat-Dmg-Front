@@ -100,7 +100,10 @@ const myIndex = computed(() =>
   myNickname.value ? leaderboard.value.findIndex((r) => r.nickname === myNickname.value) : -1,
 )
 const myRow = computed(() => (myIndex.value >= 0 ? leaderboard.value[myIndex.value] : null))
-const myPosition = computed(() => (myIndex.value >= 0 ? myIndex.value + 1 : null))
+// Miejsce pokazujemy tylko wtedy, gdy gracz ma już jakiś wynik w evencie.
+const myPosition = computed(() =>
+  myIndex.value >= 0 && myRow.value?.best_damage != null ? myIndex.value + 1 : null,
+)
 
 const eventEnded = computed(() => event.value && now.value >= new Date(event.value.end_date))
 const canJoin = computed(() => status.value === 'active' && !myRow.value && !eventEnded.value)
@@ -117,9 +120,14 @@ const canJoin = computed(() => status.value === 'active' && !myRow.value && !eve
       </button>
     </p>
 
-    <div class="home-grid">
+    <div class="home-grid" :class="{ single: !event }">
       <div class="area-info">
         <EventInfoCard :event="event">
+          <template #empty>
+            <p>
+              <RouterLink :to="{ name: 'events' }">Zobacz poprzednie wydarzenia →</RouterLink>
+            </p>
+          </template>
           <template #footer>
             <button v-if="canJoin" class="btn" type="button" :disabled="joining" @click="join">
               {{ joining ? 'Dołączanie…' : 'Dołącz do eventu' }}
@@ -136,21 +144,23 @@ const canJoin = computed(() => status.value === 'active' && !myRow.value && !eve
         </EventInfoCard>
       </div>
 
-      <div class="area-board">
-        <LeaderboardTable :rows="leaderboard" :highlight-nickname="myNickname" :limit="20" />
-      </div>
+      <!-- Tabela i wynik mają sens tylko wtedy, gdy trwa event -->
+      <template v-if="event">
+        <div class="area-board">
+          <LeaderboardTable :rows="leaderboard" :highlight-nickname="myNickname" :limit="20" />
+        </div>
 
-      <div class="area-mine">
-        <MyScoreCard
-          :status="status"
-          :has-event="!!event"
-          :row="myRow"
-          :position="myPosition"
-          :participants="leaderboard.length"
-          :scores="myScores"
-          :error="myScoresError"
-        />
-      </div>
+        <div class="area-mine">
+          <MyScoreCard
+            :status="status"
+            :row="myRow"
+            :position="myPosition"
+            :participants="leaderboard.length"
+            :scores="myScores"
+            :error="myScoresError"
+          />
+        </div>
+      </template>
     </div>
   </template>
 </template>
@@ -189,5 +199,11 @@ const canJoin = computed(() => status.value === 'active' && !myRow.value && !eve
     grid-template-columns: minmax(16rem, 1fr) minmax(0, 1.8fr) minmax(16rem, 1fr);
     grid-template-areas: 'info board mine';
   }
+}
+
+.home-grid.single {
+  grid-template-columns: minmax(0, 36rem);
+  grid-template-areas: 'info';
+  justify-content: center;
 }
 </style>

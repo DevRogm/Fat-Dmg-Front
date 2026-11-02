@@ -1,14 +1,58 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pl">
   <head>
     <meta charset="UTF-8" />
     <link rel="icon" type="image/png" href="/favicon.png" />
     <link rel="icon" href="/favicon.ico" sizes="48x48" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="color-scheme" content="light dark" />
     <title>FatDmg</title>
+    <!-- Tło i splash widoczne od pierwszej klatki, zanim załaduje się główny CSS i JS.
+         Kolory muszą zgadzać się z --bg / --text w src/assets/main.css. -->
+    <style>
+      :root {
+        color-scheme: light dark;
+        --boot-bg: #f4f5f7;
+        --boot-text: #1c2024;
+      }
+      @media (prefers-color-scheme: dark) {
+        :root {
+          --boot-bg: #14171a;
+          --boot-text: #e8eaed;
+        }
+      }
+      html,
+      body {
+        margin: 0;
+        background: var(--boot-bg);
+        color: var(--boot-text);
+      }
+      .boot {
+        position: fixed;
+        inset: 0;
+        display: grid;
+        place-items: center;
+        /* pojawia się dopiero po chwili, żeby przy szybkim starcie nie migać logo */
+        animation: boot-in 0.2s 0.2s both;
+      }
+      .boot img {
+        width: 6rem;
+        height: auto;
+      }
+      @keyframes boot-in {
+        from {
+          opacity: 0;
+        }
+        to {
+          opacity: 1;
+        }
+      }
+    </style>
   </head>
   <body>
-    <div id="app"></div>
+    <div id="app">
+      <div class="boot"><img src="/favicon.png" alt="FatDmg" /></div>
+    </div>
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>

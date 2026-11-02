@@ -5,7 +5,13 @@ import { RouterLink } from 'vue-router'
 import * as profilesApi from '@/api/profiles'
 import TankBadge from '@/components/TankBadge.vue'
 import { useAuthStore } from '@/stores/auth'
-import { formatConsole, formatDateTime, formatNumber } from '@/utils/format'
+import {
+  formatConsole,
+  formatDateTime,
+  formatNumber,
+  formatTankType,
+  formatTier,
+} from '@/utils/format'
 
 const auth = useAuthStore()
 
@@ -17,7 +23,8 @@ const profileError = ref('')
 const scoresError = ref('')
 
 const profile = computed(() => auth.profile)
-const bestDamage = computed(() => scores.value[0]?.damage ?? null)
+/** Najlepszy wynik gracza (endpoint zwraca wyniki posortowane malejąco). */
+const best = computed(() => scores.value[0] ?? null)
 
 async function loadProfile() {
   loadingProfile.value = true
@@ -87,11 +94,21 @@ watch(() => [profile.value?.id, profile.value?.is_active], loadScores, { immedia
               </span>
             </dd>
           </div>
-          <div v-if="profile.is_active">
-            <dt>Najlepszy wynik</dt>
-            <dd>{{ formatNumber(bestDamage) }}</dd>
-          </div>
         </dl>
+
+        <div v-if="best" class="best">
+          <img v-if="best.tank.img" :src="best.tank.img" alt="" class="best-img" />
+          <div v-else class="best-img best-img-empty" aria-hidden="true" />
+          <div class="best-info">
+            <span class="best-label">Najlepszy wynik</span>
+            <strong class="best-damage">{{ formatNumber(best.damage) }}</strong>
+            <span class="best-tank">{{ best.tank.name }}</span>
+            <span class="muted">
+              Tier {{ formatTier(best.tank.tier) }} · {{ formatTankType(best.tank.tank_type) }} ·
+              {{ best.event }}
+            </span>
+          </div>
+        </div>
 
         <p v-if="!profile.is_active" class="inactive">
           Profil nie jest aktywny, więc nie możesz dołączać do eventów.
@@ -249,5 +266,60 @@ watch(() => [profile.value?.id, profile.value?.is_active], loadScores, { immedia
 
 .date {
   white-space: nowrap;
+}
+
+.best {
+  display: flex;
+  align-items: center;
+  gap: 1.25rem;
+  margin-top: 1.25rem;
+  padding: 1rem;
+  background: var(--bg);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+}
+
+.best-img {
+  flex: none;
+  width: 9rem;
+  height: 5.5rem;
+  object-fit: contain;
+}
+
+.best-img-empty {
+  background: var(--border);
+  border-radius: 6px;
+  opacity: 0.5;
+}
+
+.best-info {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.best-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.best-damage {
+  font-size: 2rem;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.best-tank {
+  font-size: 1.125rem;
+  font-weight: 600;
+}
+
+@media (max-width: 30rem) {
+  .best {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 </style>
