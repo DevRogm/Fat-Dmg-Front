@@ -1,37 +1,45 @@
 <script setup>
-import { computed, onMounted, onUnmounted, ref, watch } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import { RouterLink } from 'vue-router'
 
 import * as eventsApi from '@/api/events'
-import * as profilesApi from '@/api/profiles'
+import BattleList from '@/components/BattleList.vue'
 import EventInfoCard from '@/components/EventInfoCard.vue'
+import EventJoin from '@/components/EventJoin.vue'
 import LeaderboardTable from '@/components/LeaderboardTable.vue'
 import MyScoreCard from '@/components/MyScoreCard.vue'
-import { useNow } from '@/composables/useNow'
 import { useAuthStore } from '@/stores/auth'
 
 const POLL_INTERVAL_MS = 60_000
-const MY_SCORES_LIMIT = 10
 
 const auth = useAuthStore()
-const now = useNow(10_000)
 
 const event = ref(null)
 const leaderboard = ref([])
-const myScores = ref([])
+/** @type {import('vue').Ref<{ mine: import('@/api/events').Battle[], others: import('@/api/events').Battle[] }>} */
+const battles = ref({ mine: [], others: [] })
 
 const loading = ref(true)
 const loadError = ref('')
-const myScoresError = ref('')
-const joining = ref(false)
-const joinError = ref('')
 
 let pollId = null
 
 async function loadEvent({ silent = false } = {}) {
   try {
-    event.value = await eventsApi.getCurrentEvent()
-    leaderboard.value = event.value ? await eventsApi.getLeaderboard(event.value.id) : []
+    const current = await eventsApi.getCurrentEvent()
+    if (current) {
+      // Lista bitew jest dodatkiem – jej błąd nie może psuć tabeli wyników.
+      const [board, recent] = await Promise.all([
+        eventsApi.getLeaderboard(current.id),
+        eventsApi.getRecentBattles(current.id).catch(() => ({ mine: [], others: [] })),
+      ])
+      leaderboard.value = board
+      battles.value = recent
+    } else {
+      leaderboard.value = []
+      battles.value = { mine: [], others: [] }
+    }
+    event.value = current
     loadError.value = ''
   } catch (e) {
     // Przy cichym odświeżaniu zostawiamy poprzednie dane zamiast pokazywać błąd.
@@ -41,53 +49,23 @@ async function loadEvent({ silent = false } = {}) {
   }
 }
 
-async function loadMyScores() {
-  const profileId = auth.profile?.id
-  if (!profileId) {
-    myScores.value = []
-    myScoresError.value = ''
-    return
-  }
-  try {
-    const scores = await profilesApi.getTopScores(profileId)
-    myScores.value = scores.slice(0, MY_SCORES_LIMIT)
-    myScoresError.value = ''
-  } catch (e) {
-    myScoresError.value = e.message
-  }
-}
-
-async function join() {
-  joinError.value = ''
-  joining.value = true
-  try {
-    await eventsApi.joinEvent(event.value.id)
-    leaderboard.value = await eventsApi.getLeaderboard(event.value.id)
-  } catch (e) {
-    joinError.value = e.message
-  } finally {
-    joining.value = false
-  }
+function onJoined() {
+  loadEvent({ silent: true })
 }
 
 function reload() {
   loading.value = true
   loadEvent()
-  loadMyScores()
 }
 
 onMounted(() => {
   loadEvent()
   pollId = setInterval(() => {
-    if (document.hidden) return
-    loadEvent({ silent: true })
-    loadMyScores()
+    if (!document.hidden) loadEvent({ silent: true })
   }, POLL_INTERVAL_MS)
 })
 
 onUnmounted(() => clearInterval(pollId))
-
-watch(() => auth.profile?.id, loadMyScores, { immediate: true })
 
 const status = computed(() => {
   if (!auth.isAuthenticated) return 'guest'
@@ -104,9 +82,6 @@ const myRow = computed(() => (myIndex.value >= 0 ? leaderboard.value[myIndex.val
 const myPosition = computed(() =>
   myIndex.value >= 0 && myRow.value?.best_damage != null ? myIndex.value + 1 : null,
 )
-
-const eventEnded = computed(() => event.value && now.value >= new Date(event.value.end_date))
-const canJoin = computed(() => status.value === 'active' && !myRow.value && !eventEnded.value)
 </script>
 
 <template>
@@ -129,36 +104,30 @@ const canJoin = computed(() => status.value === 'active' && !myRow.value && !eve
             </p>
           </template>
           <template #footer>
-            <button v-if="canJoin" class="btn" type="button" :disabled="joining" @click="join">
-              {{ joining ? 'Dołączanie…' : 'Dołącz do eventu' }}
-            </button>
-            <p v-else-if="myRow" class="muted">Bierzesz udział w evencie ✓</p>
-            <p v-else-if="status === 'guest'" class="muted">
-              <RouterLink :to="{ name: 'login' }">Zaloguj się</RouterLink>, aby dołączyć.
-            </p>
-            <p v-else-if="status === 'inactive'" class="muted">
-              <RouterLink :to="{ name: 'activate' }">Aktywuj profil</RouterLink>, aby dołączyć.
-            </p>
-            <p v-if="joinError" class="alert" role="alert">{{ joinError }}</p>
+            <EventJoin :event="event" :participating="!!myRow" @joined="onJoined" />
           </template>
         </EventInfoCard>
       </div>
 
-      <!-- Tabela i wynik mają sens tylko wtedy, gdy trwa event -->
+      <!-- Tabela, wynik i bitwy mają sens tylko wtedy, gdy trwa event -->
       <template v-if="event">
         <div class="area-board">
           <LeaderboardTable :rows="leaderboard" :highlight-nickname="myNickname" :limit="20" />
         </div>
 
-        <div class="area-mine">
+        <div class="area-mine side">
           <MyScoreCard
             :status="status"
             :row="myRow"
             :position="myPosition"
             :participants="leaderboard.length"
-            :scores="myScores"
-            :error="myScoresError"
+            :battles="battles.mine"
           />
+
+          <section class="panel">
+            <h2>Ostatnie bitwy innych graczy</h2>
+            <BattleList :battles="battles.others" show-nickname />
+          </section>
         </div>
       </template>
     </div>
@@ -205,5 +174,10 @@ const canJoin = computed(() => status.value === 'active' && !myRow.value && !eve
   grid-template-columns: minmax(0, 36rem);
   grid-template-areas: 'info';
   justify-content: center;
+}
+.side {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
 }
 </style>

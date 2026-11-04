@@ -12,6 +12,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isAuthenticated = computed(() => hasToken.value)
   const isActive = computed(() => profile.value?.is_active === true)
+  const isAdmin = computed(() => profile.value?.is_staff === true)
 
   function clearSession() {
     tokens.clear()
@@ -63,5 +64,15 @@ export const useAuthStore = defineStore('auth', () => {
     return initPromise
   }
 
-  return { profile, isAuthenticated, isActive, fetchProfile, login, register, logout, init }
+  return {
+    profile,
+    isAuthenticated,
+    isActive,
+    isAdmin,
+    fetchProfile,
+    login,
+    register,
+    logout,
+    init,
+  }
 })

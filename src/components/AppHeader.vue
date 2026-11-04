@@ -2,7 +2,7 @@
 import { computed, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 
-import logo from '@/assets/logo.png'
+import logo from '@/assets/logo.webp'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
@@ -50,6 +50,8 @@ async function logout() {
           <RouterLink :to="{ name: 'home' }">Start</RouterLink>
           <RouterLink :to="{ name: 'events' }">Wydarzenia</RouterLink>
           <RouterLink :to="{ name: 'stats' }">Statystyki</RouterLink>
+          <RouterLink :to="{ name: 'achievements' }">Osiągnięcia</RouterLink>
+          <RouterLink :to="{ name: 'youtube' }">Kanał YT</RouterLink>
           <RouterLink :to="{ name: 'info' }">Informacje</RouterLink>
           <template v-if="auth.isAuthenticated">
             <RouterLink :to="{ name: 'profile' }">Profil</RouterLink>
@@ -99,7 +101,7 @@ async function logout() {
 
 .brand-logo {
   display: block;
-  height: 8rem;
+  height: 9rem;
   width: auto;
 }
 
@@ -160,7 +162,7 @@ async function logout() {
 
 @media (max-width: 40rem) {
   .brand-logo {
-    height: 3rem;
+    height: 5rem;
   }
 
   .menu-toggle {

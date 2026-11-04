@@ -7,7 +7,24 @@ const router = createRouter({
   routes: [
     { path: '/', name: 'home', component: () => import('@/views/HomeView.vue') },
     { path: '/events', name: 'events', component: () => import('@/views/EventsView.vue') },
-    { path: '/stats', name: 'stats', component: () => import('@/views/StatsView.vue') },
+    {
+      path: '/events/:id(\\d+)',
+      name: 'event-detail',
+      component: () => import('@/views/EventDetailView.vue'),
+      props: true,
+    },
+    {
+      path: '/stats/:id(\\d+)?',
+      name: 'stats',
+      component: () => import('@/views/StatsView.vue'),
+      props: true,
+    },
+    {
+      path: '/achievements',
+      name: 'achievements',
+      component: () => import('@/views/AchievementsView.vue'),
+    },
+    { path: '/youtube', name: 'youtube', component: () => import('@/views/YoutubeView.vue') },
     { path: '/info', name: 'info', component: () => import('@/views/InfoView.vue') },
     {
       path: '/login',

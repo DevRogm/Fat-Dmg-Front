@@ -54,3 +54,10 @@ export function formatDuration(ms) {
   const hms = [hours, minutes, seconds].map((n) => String(n).padStart(2, '0')).join(':')
   return days > 0 ? `${days} d ${hms}` : hms
 }
+
+/** Opcje do filtrów i formularzy (bez "unknown"). */
+export const TANK_TYPE_OPTIONS = Object.entries(TANK_TYPES)
+  .filter(([value]) => value !== 'unknown')
+  .map(([value, label]) => ({ value, label }))
+
+export const TIER_OPTIONS = ROMAN.map((label, index) => ({ value: index + 1, label }))

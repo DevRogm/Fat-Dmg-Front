@@ -1,8 +1,9 @@
 <script setup>
 import { RouterLink } from 'vue-router'
 
+import BattleList from '@/components/BattleList.vue'
 import TankBadge from '@/components/TankBadge.vue'
-import { formatDateTime, formatNumber } from '@/utils/format'
+import { formatNumber } from '@/utils/format'
 
 defineProps({
   /** 'guest' | 'inactive' | 'active' */
@@ -12,9 +13,8 @@ defineProps({
   /** Moje miejsce w tabeli (1-based) albo null, gdy brak wyniku. */
   position: { type: Number, default: null },
   participants: { type: Number, default: 0 },
-  /** @type {import('vue').PropType<import('@/api/profiles').ProfileScore[]>} */
-  scores: { type: Array, default: () => [] },
-  error: { type: String, default: '' },
+  /** Moje ostatnie bitwy w tym evencie. */
+  battles: { type: Array, default: () => [] },
 })
 </script>
 
@@ -44,23 +44,8 @@ defineProps({
         <TankBadge v-if="row?.best_tank" :tank="row.best_tank" />
       </div>
 
-      <h3 class="subtitle">Twoje najlepsze wyniki</h3>
-
-      <p v-if="error" class="alert" role="alert">{{ error }}</p>
-      <p v-else-if="scores.length === 0" class="muted">—</p>
-
-      <ol v-else class="scores">
-        <li
-          v-for="(score, index) in scores"
-          :key="`${score.event_id}-${score.tank.tank_id}-${index}`"
-        >
-          <div class="line">
-            <strong class="damage">{{ formatNumber(score.damage) }}</strong>
-            <TankBadge :tank="score.tank" />
-          </div>
-          <div class="meta muted">{{ score.event }} · {{ formatDateTime(score.damage_date) }}</div>
-        </li>
-      </ol>
+      <h3 class="subtitle">Twoje ostatnie bitwy</h3>
+      <BattleList :battles="battles" />
     </template>
   </section>
 </template>
@@ -95,29 +80,5 @@ defineProps({
 .subtitle {
   margin: 0 0 0.5rem;
   font-size: 0.9375rem;
-}
-
-.scores {
-  display: flex;
-  flex-direction: column;
-  gap: 0.6rem;
-  margin: 0;
-  padding: 0;
-  list-style: none;
-}
-
-.line {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 0.75rem;
-}
-
-.damage {
-  font-variant-numeric: tabular-nums;
-}
-
-.meta {
-  font-size: 0.8125rem;
 }
 </style>

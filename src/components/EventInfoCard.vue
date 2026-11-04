@@ -7,6 +7,7 @@ import { formatDateTime, formatDuration, formatTankType, formatTier } from '@/ut
 const props = defineProps({
   /** @type {import('vue').PropType<import('@/api/events').Event|null>} */
   event: { type: Object, default: null },
+  heading: { type: String, default: 'Aktualny event' },
 })
 
 const now = useNow(1000)
@@ -14,6 +15,14 @@ const now = useNow(1000)
 const phase = computed(() => {
   const start = new Date(props.event.start_date).getTime()
   const end = new Date(props.event.end_date).getTime()
+
+  if (props.event.is_finished) {
+    return {
+      state: 'finished',
+      label: 'Event zakończony',
+      value: formatDateTime(props.event.end_date),
+    }
+  }
 
   if (now.value < start) {
     return { state: 'upcoming', label: 'Do startu', value: formatDuration(start - now.value) }
@@ -27,7 +36,7 @@ const phase = computed(() => {
 
 <template>
   <section class="panel">
-    <h2>Aktualny event</h2>
+    <h2>{{ heading }}</h2>
 
     <template v-if="event">
       <h3 class="title">{{ event.title }}</h3>
@@ -140,7 +149,8 @@ const phase = computed(() => {
   font-variant-numeric: tabular-nums;
 }
 
-.countdown[data-state='ended'] .countdown-value {
+.countdown[data-state='ended'] .countdown-value,
+.countdown[data-state='finished'] .countdown-value {
   font-size: 1rem;
 }
 

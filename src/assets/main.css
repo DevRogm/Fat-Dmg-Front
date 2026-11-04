@@ -81,7 +81,9 @@ h1 {
   font-weight: 600;
 }
 
-.field input {
+.field input,
+.field textarea,
+.field select {
   padding: 0.6rem 0.75rem;
   font: inherit;
   color: inherit;
@@ -90,12 +92,16 @@ h1 {
   border-radius: var(--radius);
 }
 
-.field input:focus-visible {
+.field input:focus-visible,
+.field textarea:focus-visible,
+.field select:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 1px;
 }
 
-.field input[aria-invalid='true'] {
+.field input[aria-invalid='true'],
+.field textarea[aria-invalid='true'],
+.field select[aria-invalid='true'] {
   border-color: var(--danger);
 }
 

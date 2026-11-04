@@ -1,6 +1,7 @@
 <script setup>
 import { computed } from 'vue'
 
+import PlayerLink from '@/components/PlayerLink.vue'
 import TankBadge from '@/components/TankBadge.vue'
 import { formatNumber } from '@/utils/format'
 
@@ -9,15 +10,20 @@ const props = defineProps({
   rows: { type: Array, default: () => [] },
   /** Nick zalogowanego gracza – jego wiersz jest wyróżniony. */
   highlightNickname: { type: String, default: null },
+  /** Ile wierszy pokazać; null = wszystkie. */
   limit: { type: Number, default: 20 },
+  title: { type: String, default: 'Tabela wyników' },
 })
 
-const visibleRows = computed(() => props.rows.slice(0, props.limit))
+const visibleRows = computed(() =>
+  props.limit == null ? props.rows : props.rows.slice(0, props.limit),
+)
+const truncated = computed(() => props.limit != null && props.rows.length > props.limit)
 </script>
 
 <template>
   <section class="panel">
-    <h2>Tabela wyników</h2>
+    <h2>{{ title }}</h2>
 
     <p v-if="rows.length === 0" class="muted">Nikt jeszcze nie dołączył do eventu.</p>
 
@@ -25,11 +31,9 @@ const visibleRows = computed(() => props.rows.slice(0, props.limit))
       <div class="table-wrap">
         <table class="table">
           <caption class="sr-only">
-            Top
             {{
-              limit
+              limit == null ? title : `Top ${limit}`
             }}
-            aktualnego eventu
           </caption>
           <thead>
             <tr>
@@ -45,8 +49,12 @@ const visibleRows = computed(() => props.rows.slice(0, props.limit))
               :key="row.nickname"
               :class="{ me: row.nickname === highlightNickname }"
             >
-              <td class="num place">{{ index + 1 }}</td>
-              <td class="nickname">{{ row.nickname }}</td>
+              <td class="num place">
+                {{ row.best_damage == null ? '—' : (row.place ?? index + 1) }}
+              </td>
+              <td class="nickname">
+                <PlayerLink :profile-id="row.profile_id" :nickname="row.nickname" />
+              </td>
               <td class="num damage">{{ formatNumber(row.best_damage) }}</td>
               <td><TankBadge :tank="row.best_tank" /></td>
             </tr>
@@ -54,7 +62,7 @@ const visibleRows = computed(() => props.rows.slice(0, props.limit))
         </table>
       </div>
 
-      <p v-if="rows.length > limit" class="muted more">
+      <p v-if="truncated" class="muted more">
         Pokazano {{ limit }} z {{ rows.length }} uczestników.
       </p>
     </template>
