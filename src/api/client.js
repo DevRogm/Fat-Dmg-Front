@@ -18,7 +18,11 @@ export class ApiError extends Error {
    * @param {any} data sparsowane body odpowiedzi (np. { username: ['...'] })
    */
   constructor(status, data) {
-    super(extractMessage(data) ?? `Błąd serwera (${status})`)
+    super(
+      status === 429
+        ? 'Zbyt wiele prób. Spróbuj ponownie za jakiś czas.'
+        : (extractMessage(data) ?? `Błąd serwera (${status})`),
+    )
     this.name = 'ApiError'
     this.status = status
     this.data = data

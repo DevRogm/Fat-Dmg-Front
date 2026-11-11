@@ -10,14 +10,16 @@ const route = useRoute()
 const router = useRouter()
 
 const username = ref('')
+const email = ref('')
 const password = ref('')
 const passwordRepeat = ref('')
-const errors = reactive({ username: '', password: '', passwordRepeat: '' })
+const errors = reactive({ username: '', email: '', password: '', passwordRepeat: '' })
 const error = ref('')
 const loading = ref(false)
 
 function resetErrors() {
   errors.username = ''
+  errors.email = ''
   errors.password = ''
   errors.passwordRepeat = ''
   error.value = ''
@@ -33,15 +35,16 @@ async function submit() {
 
   loading.value = true
   try {
-    await auth.register(username.value.trim(), password.value)
+    await auth.register(username.value.trim(), email.value.trim(), password.value)
     // Nowe konto nigdy nie jest aktywne – prowadzimy od razu do aktywacji.
     await router.push({ name: 'activate' })
   } catch (e) {
     const fields = e.fieldErrors ?? {}
     errors.username = fields.username ?? ''
+    errors.email = fields.email ?? ''
     errors.password = fields.password ?? ''
     // Komunikat ogólny tylko wtedy, gdy nie ma błędów przypisanych do pól.
-    if (!errors.username && !errors.password) error.value = e.message
+    if (!errors.username && !errors.email && !errors.password) error.value = e.message
   } finally {
     loading.value = false
   }
@@ -63,6 +66,15 @@ async function submit() {
         :error="errors.username"
         required
         autofocus
+      />
+      <FormField
+        id="email"
+        v-model="email"
+        label="E-mail"
+        type="email"
+        autocomplete="email"
+        :error="errors.email"
+        required
       />
       <FormField
         id="password"

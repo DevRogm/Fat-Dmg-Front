@@ -61,6 +61,10 @@ async function submit() {
       </button>
 
       <p class="muted">
+        <RouterLink :to="{ name: 'forgot-password' }">Nie pamiętasz hasła?</RouterLink>
+      </p>
+
+      <p class="muted">
         Nie masz konta?
         <RouterLink :to="{ name: 'register', query: route.query }">Zarejestruj się</RouterLink>
       </p>

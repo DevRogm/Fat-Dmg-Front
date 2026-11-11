@@ -38,8 +38,8 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   /** Rejestruje i od razu loguje. */
-  async function register(username, password) {
-    await authApi.register(username, password)
+  async function register(username, email, password) {
+    await authApi.register(username, email, password)
     await login(username, password)
   }
 

@@ -24,6 +24,7 @@ const router = createRouter({
       name: 'achievements',
       component: () => import('@/views/AchievementsView.vue'),
     },
+    { path: '/news', name: 'news', component: () => import('@/views/NewsView.vue') },
     { path: '/youtube', name: 'youtube', component: () => import('@/views/YoutubeView.vue') },
     { path: '/info', name: 'info', component: () => import('@/views/InfoView.vue') },
     {
@@ -42,6 +43,24 @@ const router = createRouter({
       path: '/activate',
       name: 'activate',
       component: () => import('@/views/ActivationView.vue'),
+      meta: { requiresAuth: true },
+    },
+    {
+      path: '/forgot-password',
+      name: 'forgot-password',
+      component: () => import('@/views/ForgotPasswordView.vue'),
+      meta: { guestOnly: true },
+    },
+    {
+      path: '/reset-password/:uid/:token',
+      name: 'reset-password',
+      component: () => import('@/views/ResetPasswordView.vue'),
+      props: true,
+    },
+    {
+      path: '/account',
+      name: 'account',
+      component: () => import('@/views/AccountView.vue'),
       meta: { requiresAuth: true },
     },
     {
