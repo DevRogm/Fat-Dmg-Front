@@ -1,5 +1,5 @@
 <script setup>
-import { computed } from 'vue'
+import { computed, ref, watch } from 'vue'
 
 import PlayerLink from '@/components/PlayerLink.vue'
 import TankBadge from '@/components/TankBadge.vue'
@@ -10,15 +10,40 @@ const props = defineProps({
   rows: { type: Array, default: () => [] },
   /** Nick zalogowanego gracza – jego wiersz jest wyróżniony. */
   highlightNickname: { type: String, default: null },
-  /** Ile wierszy pokazać; null = wszystkie. */
+  /** Ile wierszy pokazać (Top N, bez stron); null = wszystkie. Ignorowane z pageSize. */
   limit: { type: Number, default: 20 },
+  /** Gdy ustawione: tabela jest dzielona na strony po tyle wierszy. */
+  pageSize: { type: Number, default: null },
   title: { type: String, default: 'Tabela wyników' },
 })
 
-const visibleRows = computed(() =>
-  props.limit == null ? props.rows : props.rows.slice(0, props.limit),
+const page = ref(1)
+
+const paged = computed(() => props.pageSize != null)
+const pageCount = computed(() =>
+  paged.value ? Math.max(1, Math.ceil(props.rows.length / props.pageSize)) : 1,
 )
-const truncated = computed(() => props.limit != null && props.rows.length > props.limit)
+// Numer pierwszego wiersza na bieżącej stronie (0-based) – do liczenia miejsc.
+const offset = computed(() => (paged.value ? (page.value - 1) * props.pageSize : 0))
+
+const visibleRows = computed(() => {
+  if (paged.value) return props.rows.slice(offset.value, offset.value + props.pageSize)
+  return props.limit == null ? props.rows : props.rows.slice(0, props.limit)
+})
+const truncated = computed(
+  () => !paged.value && props.limit != null && props.rows.length > props.limit,
+)
+const rangeEnd = computed(() => Math.min(offset.value + props.pageSize, props.rows.length))
+
+// Dane odświeżają się w tle (może ubyć uczestników) – nie zostajemy za ostatnią stroną.
+watch(pageCount, (count) => {
+  if (page.value > count) page.value = count
+})
+
+const caption = computed(() => {
+  if (paged.value) return `${props.title}, strona ${page.value} z ${pageCount.value}`
+  return props.limit == null ? props.title : `Top ${props.limit}`
+})
 </script>
 
 <template>
@@ -32,7 +57,7 @@ const truncated = computed(() => props.limit != null && props.rows.length > prop
         <table class="table">
           <caption class="sr-only">
             {{
-              limit == null ? title : `Top ${limit}`
+              caption
             }}
           </caption>
           <thead>
@@ -50,7 +75,7 @@ const truncated = computed(() => props.limit != null && props.rows.length > prop
               :class="{ me: row.nickname === highlightNickname }"
             >
               <td class="num place">
-                {{ row.best_damage == null ? '—' : (row.place ?? index + 1) }}
+                {{ row.best_damage == null ? '—' : (row.place ?? offset + index + 1) }}
               </td>
               <td class="nickname">
                 <PlayerLink :profile-id="row.profile_id" :nickname="row.nickname" />
@@ -65,6 +90,31 @@ const truncated = computed(() => props.limit != null && props.rows.length > prop
       <p v-if="truncated" class="muted more">
         Pokazano {{ limit }} z {{ rows.length }} uczestników.
       </p>
+
+      <nav v-if="paged && pageCount > 1" class="pager" aria-label="Strony tabeli wyników">
+        <p class="muted" aria-live="polite">
+          Wyniki {{ offset + 1 }}–{{ rangeEnd }} z {{ rows.length }}
+        </p>
+        <div class="pager-buttons">
+          <button
+            class="btn btn-secondary btn-small"
+            type="button"
+            :disabled="page <= 1"
+            @click="page--"
+          >
+            ← Poprzednia
+          </button>
+          <span class="muted">Strona {{ page }} z {{ pageCount }}</span>
+          <button
+            class="btn btn-secondary btn-small"
+            type="button"
+            :disabled="page >= pageCount"
+            @click="page++"
+          >
+            Następna →
+          </button>
+        </div>
+      </nav>
     </template>
   </section>
 </template>
@@ -117,5 +167,24 @@ const truncated = computed(() => props.limit != null && props.rows.length > prop
 
 .more {
   margin: 0.75rem 0 0;
+}
+
+.pager {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem 1rem;
+  margin-top: 0.75rem;
+}
+
+.pager p {
+  margin: 0;
+}
+
+.pager-buttons {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
 }
 </style>

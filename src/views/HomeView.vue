@@ -112,7 +112,7 @@ const myPosition = computed(() =>
       <!-- Tabela, wynik i bitwy mają sens tylko wtedy, gdy trwa event -->
       <template v-if="event">
         <div class="area-board">
-          <LeaderboardTable :rows="leaderboard" :highlight-nickname="myNickname" :limit="20" />
+          <LeaderboardTable :rows="leaderboard" :highlight-nickname="myNickname" :page-size="20" />
         </div>
 
         <div class="area-mine side">

@@ -140,7 +140,7 @@ const loginLink = computed(() => ({ name: 'login', query: { redirect: route.full
         <LeaderboardTable
           :rows="leaderboard"
           :highlight-nickname="myNickname"
-          :limit="null"
+          :page-size="20"
           title="Pełna tabela wyników"
         />
       </div>
