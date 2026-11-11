@@ -1,9 +1,7 @@
 <script setup>
 defineProps({
   title: { type: String, required: true },
-  description: { type: String, required: true },
-  /** Lista rzeczy, które mają się tu pojawić. */
-  planned: { type: Array, default: () => [] },
+  description: { type: String, default: '' },
 })
 </script>
 
@@ -11,14 +9,7 @@ defineProps({
   <section class="placeholder">
     <h1>{{ title }}</h1>
     <p class="badge-wip">W przygotowaniu</p>
-    <p>{{ description }}</p>
-
-    <template v-if="planned.length">
-      <h2>Planowane</h2>
-      <ul>
-        <li v-for="item in planned" :key="item">{{ item }}</li>
-      </ul>
-    </template>
+    <p v-if="description">{{ description }}</p>
   </section>
 </template>
 
@@ -36,19 +27,9 @@ defineProps({
   margin-bottom: 0.5rem;
 }
 
-.placeholder h2 {
-  margin: 1.25rem 0 0.5rem;
-  font-size: 1rem;
-}
-
-.placeholder ul {
-  margin: 0;
-  padding-left: 1.25rem;
-}
-
 .badge-wip {
   display: inline-block;
-  margin: 0 0 0.75rem;
+  margin: 0;
   padding: 0.1rem 0.6rem;
   font-size: 0.75rem;
   font-weight: 600;

@@ -100,12 +100,14 @@ async function parseBody(res) {
 export async function request(path, { method = 'GET', body, params, auth = true } = {}) {
   const send = () => {
     const headers = {}
-    if (body !== undefined) headers['Content-Type'] = 'application/json'
+    // FormData (upload plików): Content-Type z boundary ustawia przeglądarka.
+    const isForm = body instanceof FormData
+    if (body !== undefined && !isForm) headers['Content-Type'] = 'application/json'
     const access = auth ? tokens.getAccess() : null
     if (access) headers.Authorization = `Bearer ${access}`
 
     const init = { method, headers }
-    if (body !== undefined) init.body = JSON.stringify(body)
+    if (body !== undefined) init.body = isForm ? body : JSON.stringify(body)
     return fetch(buildUrl(path, params), init)
   }
 

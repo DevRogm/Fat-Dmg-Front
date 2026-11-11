@@ -53,7 +53,7 @@ async function logout() {
           <RouterLink :to="{ name: 'stats' }">Statystyki</RouterLink>
           <RouterLink :to="{ name: 'achievements' }">Osiągnięcia</RouterLink>
           <RouterLink :to="{ name: 'youtube' }">Kanał YT</RouterLink>
-          <RouterLink :to="{ name: 'info' }">Informacje</RouterLink>
+          <RouterLink :to="{ name: 'reports' }">Zgłoszenia</RouterLink>
           <template v-if="auth.isAuthenticated">
             <RouterLink :to="{ name: 'profile' }">Profil</RouterLink>
             <RouterLink :to="{ name: 'account' }">Konto</RouterLink>

@@ -26,7 +26,6 @@ const router = createRouter({
     },
     { path: '/news', name: 'news', component: () => import('@/views/NewsView.vue') },
     { path: '/youtube', name: 'youtube', component: () => import('@/views/YoutubeView.vue') },
-    { path: '/info', name: 'info', component: () => import('@/views/InfoView.vue') },
     {
       path: '/login',
       name: 'login',
@@ -56,6 +55,12 @@ const router = createRouter({
       name: 'reset-password',
       component: () => import('@/views/ResetPasswordView.vue'),
       props: true,
+    },
+    {
+      path: '/reports',
+      name: 'reports',
+      component: () => import('@/views/ReportsView.vue'),
+      meta: { requiresAuth: true },
     },
     {
       path: '/account',
