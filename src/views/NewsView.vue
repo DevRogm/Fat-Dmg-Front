@@ -2,9 +2,10 @@
 import { computed, onMounted, ref } from 'vue'
 
 import * as newsApi from '@/api/news'
+import PaginationBar from '@/components/PaginationBar.vue'
 import { formatDateTime } from '@/utils/format'
 
-const PAGE_SIZE = 20
+const PAGE_SIZE = 10 // musi się zgadzać z NewsPagination.page_size w backendzie
 
 /** @type {import('vue').Ref<import('@/api/news').NewsPost[]>} */
 const posts = ref([])
@@ -51,29 +52,20 @@ onMounted(() => load(1))
         <h2>{{ post.title }}</h2>
         <p class="muted">
           <time :datetime="post.published_at">{{ formatDateTime(post.published_at) }}</time>
+          <template v-if="post.author"> · Autor: {{ post.author }}</template>
         </p>
         <p class="content">{{ post.content }}</p>
       </article>
 
-      <nav v-if="pageCount > 1" class="pager" aria-label="Strony aktualności">
-        <button
-          class="btn btn-secondary btn-small"
-          type="button"
-          :disabled="page <= 1 || loading"
-          @click="load(page - 1)"
-        >
-          Nowsze
-        </button>
-        <span class="muted">Strona {{ page }} z {{ pageCount }}</span>
-        <button
-          class="btn btn-secondary btn-small"
-          type="button"
-          :disabled="page >= pageCount || loading"
-          @click="load(page + 1)"
-        >
-          Starsze
-        </button>
-      </nav>
+      <PaginationBar
+        :page="page"
+        :page-count="pageCount"
+        :disabled="loading"
+        label="Strony aktualności"
+        prev-label="Nowsze"
+        next-label="Starsze"
+        @change="load"
+      />
     </template>
   </section>
 </template>
@@ -103,12 +95,5 @@ onMounted(() => load(1))
   margin-top: 0.75rem !important;
   white-space: pre-line;
   overflow-wrap: anywhere;
-}
-
-.pager {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 1rem;
 }
 </style>

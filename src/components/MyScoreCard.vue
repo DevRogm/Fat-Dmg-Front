@@ -1,7 +1,6 @@
 <script setup>
 import { RouterLink } from 'vue-router'
 
-import BattleList from '@/components/BattleList.vue'
 import TankBadge from '@/components/TankBadge.vue'
 import { formatNumber } from '@/utils/format'
 
@@ -13,8 +12,6 @@ defineProps({
   /** Moje miejsce w tabeli (1-based) albo null, gdy brak wyniku. */
   position: { type: Number, default: null },
   participants: { type: Number, default: 0 },
-  /** Moje ostatnie bitwy w tym evencie. */
-  battles: { type: Array, default: () => [] },
 })
 </script>
 
@@ -43,16 +40,12 @@ defineProps({
         </p>
         <TankBadge v-if="row?.best_tank" :tank="row.best_tank" />
       </div>
-
-      <h3 class="subtitle">Twoje ostatnie bitwy</h3>
-      <BattleList :battles="battles" />
     </template>
   </section>
 </template>
 
 <style scoped>
 .current {
-  margin-bottom: 1.25rem;
   padding: 0.75rem 1rem;
   background: var(--bg);
   border: 1px solid var(--border);
@@ -75,10 +68,5 @@ defineProps({
 .best strong {
   font-size: 1.25rem;
   font-variant-numeric: tabular-nums;
-}
-
-.subtitle {
-  margin: 0 0 0.5rem;
-  font-size: 0.9375rem;
 }
 </style>

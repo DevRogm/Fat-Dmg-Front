@@ -42,8 +42,8 @@ const phase = computed(() => {
       <h3 class="title">{{ event.title }}</h3>
 
       <ul class="chips" aria-label="Wymagania eventu">
-        <li class="chip">Tier {{ formatTier(event.tank_tier) }}</li>
-        <li class="chip">{{ formatTankType(event.tank_type) }}</li>
+        <li class="chip">Tier: {{ formatTier(event.tank_tier) }}</li>
+        <li class="chip">Typ czołgu: {{ formatTankType(event.tank_type).toLowerCase() }}</li>
       </ul>
 
       <p v-if="event.description" class="description">{{ event.description }}</p>
@@ -128,6 +128,8 @@ const phase = computed(() => {
 .countdown {
   display: flex;
   flex-direction: column;
+  width: fit-content;
+  max-width: 100%;
   padding: 0.75rem 1rem;
   background: var(--bg);
   border: 1px solid var(--border);

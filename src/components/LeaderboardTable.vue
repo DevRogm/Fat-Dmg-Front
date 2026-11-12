@@ -47,7 +47,7 @@ const caption = computed(() => {
 </script>
 
 <template>
-  <section class="panel">
+  <section class="panel board">
     <h2>{{ title }}</h2>
 
     <p v-if="rows.length === 0" class="muted">Nikt jeszcze nie dołączył do eventu.</p>
@@ -120,6 +120,11 @@ const caption = computed(() => {
 </template>
 
 <style scoped>
+.board {
+  display: flex;
+  flex-direction: column;
+}
+
 .table-wrap {
   overflow-x: auto;
 }
@@ -175,7 +180,8 @@ const caption = computed(() => {
   align-items: center;
   justify-content: space-between;
   gap: 0.5rem 1rem;
-  margin-top: 0.75rem;
+  padding-top: 0.75rem;
+  margin-top: auto;
 }
 
 .pager p {

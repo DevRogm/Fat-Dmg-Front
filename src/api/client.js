@@ -5,7 +5,8 @@ const BASE_URL = (import.meta.env.VITE_API_URL ?? 'http://127.0.0.1:8000/api').r
 /** Wyciąga czytelny komunikat z odpowiedzi błędu DRF. */
 function extractMessage(data) {
   if (!data) return null
-  if (typeof data === 'string') return data
+  // Strona błędu (np. debug Django) to HTML – nie nadaje się na komunikat dla użytkownika.
+  if (typeof data === 'string') return data.trimStart().startsWith('<') ? null : data
   if (Array.isArray(data)) return typeof data[0] === 'string' ? data[0] : null
   if (typeof data.detail === 'string') return data.detail
   if (Array.isArray(data.non_field_errors)) return data.non_field_errors[0]

@@ -3,14 +3,17 @@ import { computed, ref, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 
 import * as profilesApi from '@/api/profiles'
-import BattleList from '@/components/BattleList.vue'
 import BestResultTile from '@/components/BestResultTile.vue'
+import PaginationBar from '@/components/PaginationBar.vue'
 import PlayerSearch from '@/components/PlayerSearch.vue'
 import TankBadge from '@/components/TankBadge.vue'
+import TopScoresTable from '@/components/TopScoresTable.vue'
+import { usePagination } from '@/composables/usePagination'
 import { useAuthStore } from '@/stores/auth'
 import { formatConsole, formatNumber, formatTankType, formatTier } from '@/utils/format'
 
-const TOP_BATTLES = 10
+const TOP_BATTLES_LIMIT = 100
+const EVENTS_PER_PAGE = 5
 
 const props = defineProps({
   /** Z adresu /stats/:id; brak = bez wybranego gracza. */
@@ -42,7 +45,7 @@ async function load(id) {
     ])
     if (current !== requestId) return
     stats.value = data
-    topBattles.value = scores.slice(0, TOP_BATTLES)
+    topBattles.value = scores.slice(0, TOP_BATTLES_LIMIT)
   } catch (e) {
     if (current !== requestId) return
     stats.value = null
@@ -75,13 +78,20 @@ watch(
 const isMe = computed(() => !!stats.value && stats.value.profile.id === auth.profile?.id)
 const summary = computed(() => stats.value?.summary ?? null)
 
+const eventsPager = usePagination(() => stats.value?.events ?? [], EVENTS_PER_PAGE)
+
+/** Ostatnio zajęte miejsce: najnowszy zakończony event z przyznanym miejscem (historia jest od najnowszych). */
+const lastPlace = computed(() => {
+  const row = (stats.value?.events ?? []).find((r) => r.is_finished && r.place)
+  return row ? row.place : null
+})
+
 const tiles = computed(() => {
   const s = summary.value
   if (!s) return []
   return [
     { label: 'Eventy', value: formatNumber(s.events_played) },
-    { label: 'Zwycięstwa', value: formatNumber(s.wins) },
-    { label: 'Podia (top 3)', value: formatNumber(s.podiums) },
+    { label: 'Ostatnio zajęte miejsce', value: lastPlace.value ? `#${lastPlace.value}` : '—' },
     { label: 'Najlepsze miejsce', value: s.best_place ? `#${s.best_place}` : '—' },
     { label: 'Zapisane bitwy', value: formatNumber(s.battles_count) },
     { label: 'Średni damage', value: formatNumber(s.average_damage) },
@@ -125,7 +135,6 @@ function placeLabel(row) {
         <span v-if="stats.profile.console" class="muted">
           {{ formatConsole(stats.profile.console) }}
         </span>
-        <span v-if="isMe" class="badge">to Ty</span>
       </header>
 
       <p v-if="summary.events_played === 0" class="muted">
@@ -137,19 +146,20 @@ function placeLabel(row) {
       </p>
 
       <template v-else>
-        <ul class="tiles" aria-label="Podsumowanie">
+        <ul class="tiles" :class="{ 'with-best': !!summary.best_result }" aria-label="Podsumowanie">
           <li v-for="tile in tiles" :key="tile.label" class="tile">
             <span class="tile-label">{{ tile.label }}</span>
             <strong class="tile-value">{{ tile.value }}</strong>
           </li>
+          <li v-if="summary.best_result" class="tile-best">
+            <BestResultTile
+              compact
+              :damage="summary.best_result.best_damage"
+              :tank="summary.best_result.best_tank"
+              :event-name="summary.best_result.event"
+            />
+          </li>
         </ul>
-
-        <BestResultTile
-          v-if="summary.best_result"
-          :damage="summary.best_result.best_damage"
-          :tank="summary.best_result.best_tank"
-          :event-name="summary.best_result.event"
-        />
 
         <section class="panel">
           <h2>Historia eventów</h2>
@@ -168,7 +178,7 @@ function placeLabel(row) {
                 </tr>
               </thead>
               <tbody>
-                <tr v-for="row in stats.events" :key="row.event_id">
+                <tr v-for="row in eventsPager.items.value" :key="row.event_id">
                   <td>
                     <RouterLink :to="{ name: 'event-detail', params: { id: row.event_id } }">
                       {{ row.event }}
@@ -185,11 +195,17 @@ function placeLabel(row) {
               </tbody>
             </table>
           </div>
+          <PaginationBar
+            :page="eventsPager.page.value"
+            :page-count="eventsPager.pageCount.value"
+            label="Strony historii eventów"
+            @change="eventsPager.page.value = $event"
+          />
         </section>
 
         <section v-if="topBattles.length" class="panel">
-          <h2>Najlepsze bitwy</h2>
-          <BattleList :battles="topBattles" />
+          <h2>Najlepsze bitwy (TOP 100)</h2>
+          <TopScoresTable :scores="topBattles" caption="Najlepsze bitwy" />
         </section>
       </template>
     </template>
@@ -223,14 +239,6 @@ function placeLabel(row) {
   font-size: 1.5rem;
 }
 
-.badge {
-  padding: 0.1rem 0.6rem;
-  font-size: 0.75rem;
-  color: var(--accent);
-  border: 1px solid var(--accent);
-  border-radius: 999px;
-}
-
 .tiles {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(9rem, 1fr));
@@ -240,13 +248,39 @@ function placeLabel(row) {
   list-style: none;
 }
 
+@media (min-width: 64rem) {
+  .tiles {
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+  }
+
+  .tiles.with-best {
+    grid-template-columns: repeat(5, minmax(0, 1fr)) minmax(16rem, 2fr);
+  }
+}
+
 .tile {
   display: flex;
   flex-direction: column;
+  text-align: center;
   padding: 0.75rem 1rem;
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius);
+}
+
+.tile-best {
+  display: flex;
+}
+
+.tile-best > * {
+  flex: 1;
+  min-width: 0;
+}
+
+@media (min-width: 40rem) and (max-width: 63.99rem) {
+  .tile-best {
+    grid-column: span 2;
+  }
 }
 
 .tile-label {
@@ -257,6 +291,10 @@ function placeLabel(row) {
 }
 
 .tile-value {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: center;
   font-size: 1.5rem;
   font-variant-numeric: tabular-nums;
 }

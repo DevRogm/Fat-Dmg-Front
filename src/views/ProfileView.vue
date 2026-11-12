@@ -4,18 +4,15 @@ import { RouterLink } from 'vue-router'
 
 import * as profilesApi from '@/api/profiles'
 import BestResultTile from '@/components/BestResultTile.vue'
-import TankBadge from '@/components/TankBadge.vue'
 import { useAuthStore } from '@/stores/auth'
-import { formatConsole, formatDateTime, formatNumber } from '@/utils/format'
+import { formatConsole } from '@/utils/format'
 
 const auth = useAuthStore()
 
 /** @type {import('vue').Ref<import('@/api/profiles').ProfileScore[]>} */
 const scores = ref([])
 const loadingProfile = ref(!auth.profile)
-const loadingScores = ref(false)
 const profileError = ref('')
-const scoresError = ref('')
 
 const profile = computed(() => auth.profile)
 /** Najlepszy wynik gracza (endpoint zwraca wyniki posortowane malejąco). */
@@ -33,19 +30,16 @@ async function loadProfile() {
   }
 }
 
+/** Wyniki służą tylko do wyznaczenia najlepszego wyniku; błąd nie psuje strony. */
 async function loadScores() {
-  scoresError.value = ''
   if (!profile.value?.id || !profile.value.is_active) {
     scores.value = []
     return
   }
-  loadingScores.value = true
   try {
     scores.value = await profilesApi.getTopScores(profile.value.id)
-  } catch (e) {
-    scoresError.value = e.message
-  } finally {
-    loadingScores.value = false
+  } catch {
+    scores.value = []
   }
 }
 
@@ -89,66 +83,21 @@ watch(() => [profile.value?.id, profile.value?.is_active], loadScores, { immedia
               </span>
             </dd>
           </div>
+          <BestResultTile
+            v-if="best"
+            compact
+            fill
+            class="best-tile"
+            :damage="best.damage"
+            :tank="best.tank"
+            :event-name="best.event"
+          />
         </dl>
-
-        <BestResultTile
-          v-if="best"
-          class="best-tile"
-          :damage="best.damage"
-          :tank="best.tank"
-          :event-name="best.event"
-        />
 
         <p v-if="!profile.is_active" class="inactive">
           Profil nie jest aktywny, więc nie możesz dołączać do eventów.
           <RouterLink :to="{ name: 'activate' }">Aktywuj konto</RouterLink>
         </p>
-      </section>
-
-      <section v-if="profile.is_active" class="panel">
-        <h2>Najlepsze wyniki</h2>
-
-        <p v-if="loadingScores" class="muted">Ładowanie wyników…</p>
-
-        <p v-else-if="scoresError" class="alert" role="alert">
-          {{ scoresError }}
-          <button class="btn btn-secondary btn-small" type="button" @click="loadScores">
-            Spróbuj ponownie
-          </button>
-        </p>
-
-        <p v-else-if="scores.length === 0" class="muted">
-          Nie masz jeszcze żadnych wyników. Dołącz do eventu na stronie głównej.
-        </p>
-
-        <div v-else class="table-wrap">
-          <table class="table">
-            <caption class="sr-only">
-              Twoje najlepsze wyniki
-            </caption>
-            <thead>
-              <tr>
-                <th scope="col" class="num">#</th>
-                <th scope="col" class="num">Damage</th>
-                <th scope="col">Czołg</th>
-                <th scope="col">Event</th>
-                <th scope="col">Data</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr
-                v-for="(score, index) in scores"
-                :key="`${score.event_id}-${score.tank.tank_id}-${index}`"
-              >
-                <td class="num muted">{{ index + 1 }}</td>
-                <td class="num damage">{{ formatNumber(score.damage) }}</td>
-                <td><TankBadge :tank="score.tank" /></td>
-                <td>{{ score.event }}</td>
-                <td class="date">{{ formatDateTime(score.damage_date) }}</td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
       </section>
     </template>
   </div>
@@ -175,9 +124,10 @@ watch(() => [profile.value?.id, profile.value?.is_active], loadScores, { immedia
 }
 
 .details {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(10rem, 1fr));
-  gap: 1rem;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem 2.5rem;
+  align-items: center;
   margin: 0;
 }
 
@@ -220,44 +170,10 @@ watch(() => [profile.value?.id, profile.value?.is_active], loadScores, { immedia
   margin: 1rem 0 0;
 }
 
-.table-wrap {
-  overflow-x: auto;
-}
-
-.table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 0.9375rem;
-}
-
-.table th,
-.table td {
-  padding: 0.4rem 0.5rem;
-  text-align: left;
-  border-bottom: 1px solid var(--border);
-}
-
-.table th {
-  font-size: 0.75rem;
-  color: var(--text-muted);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.table .num {
-  text-align: right;
-  font-variant-numeric: tabular-nums;
-}
-
-.damage {
-  font-weight: 700;
-}
-
-.date {
-  white-space: nowrap;
-}
-
+/* Kafelek z najlepszym wynikiem dopełnia linię do prawej; na wąskim ekranie zawija się niżej. */
 .best-tile {
-  margin-top: 1.25rem;
+  flex: 1 1 18rem;
+  max-width: 28rem;
+  margin-left: auto;
 }
 </style>

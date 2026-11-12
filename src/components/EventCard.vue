@@ -40,8 +40,8 @@ const mineInTop = computed(
     </header>
 
     <ul class="chips" aria-label="Wymagania eventu">
-      <li class="chip">Tier {{ formatTier(event.tank_tier) }}</li>
-      <li class="chip">{{ formatTankType(event.tank_type) }}</li>
+      <li class="chip">Tier: {{ formatTier(event.tank_tier) }}</li>
+      <li class="chip">Typ czołgu: {{ formatTankType(event.tank_type).toLowerCase() }}</li>
       <li class="chip chip-muted">Graczy: {{ event.participants_count ?? 0 }}</li>
     </ul>
 

@@ -140,7 +140,7 @@ async function logout() {
   color: var(--text);
 }
 
-.nav-links a.router-link-exact-active {
+.nav-links a.router-link-active {
   color: var(--text);
   border-bottom-color: var(--accent);
 }

@@ -96,7 +96,7 @@ const myPosition = computed(() =>
     </p>
 
     <div class="home-grid" :class="{ single: !event }">
-      <div class="area-info">
+      <div class="area-left side">
         <EventInfoCard :event="event">
           <template #empty>
             <p>
@@ -107,22 +107,27 @@ const myPosition = computed(() =>
             <EventJoin :event="event" :participating="!!myRow" @joined="onJoined" />
           </template>
         </EventInfoCard>
+
+        <MyScoreCard
+          v-if="event"
+          :status="status"
+          :row="myRow"
+          :position="myPosition"
+          :participants="leaderboard.length"
+        />
       </div>
 
       <!-- Tabela, wynik i bitwy mają sens tylko wtedy, gdy trwa event -->
       <template v-if="event">
         <div class="area-board">
-          <LeaderboardTable :rows="leaderboard" :highlight-nickname="myNickname" :page-size="20" />
+          <LeaderboardTable :rows="leaderboard" :highlight-nickname="myNickname" :page-size="10" />
         </div>
 
-        <div class="area-mine side">
-          <MyScoreCard
-            :status="status"
-            :row="myRow"
-            :position="myPosition"
-            :participants="leaderboard.length"
-            :battles="battles.mine"
-          />
+        <div class="area-battles side">
+          <section v-if="status === 'active'" class="panel">
+            <h2>Twoje ostatnie bitwy</h2>
+            <BattleList :battles="battles.mine" />
+          </section>
 
           <section class="panel">
             <h2>Ostatnie bitwy innych graczy</h2>
@@ -146,38 +151,49 @@ const myPosition = computed(() =>
 .home-grid {
   display: grid;
   gap: 1rem;
-  align-items: start;
   grid-template-areas:
-    'info'
-    'mine'
-    'board';
+    'left'
+    'board'
+    'battles';
 }
 
-.area-info {
-  grid-area: info;
+.area-left {
+  grid-area: left;
 }
 .area-board {
   grid-area: board;
+  display: flex;
 }
-.area-mine {
-  grid-area: mine;
+
+/* Tabela wypełnia całą wysokość kolumny, więc ramki są równo z lewą i prawą stroną. */
+.area-board > .panel {
+  flex: 1;
+  min-width: 0;
+}
+.area-battles {
+  grid-area: battles;
 }
 
 @media (min-width: 64rem) {
   .home-grid {
-    grid-template-columns: minmax(16rem, 1fr) minmax(0, 1.8fr) minmax(16rem, 1fr);
-    grid-template-areas: 'info board mine';
+    grid-template-columns: minmax(14rem, 0.7fr) minmax(0, 1.5fr) minmax(18rem, 1.2fr);
+    grid-template-areas: 'left board battles';
   }
 }
 
 .home-grid.single {
   grid-template-columns: minmax(0, 36rem);
-  grid-template-areas: 'info';
+  grid-template-areas: 'left';
   justify-content: center;
 }
 .side {
   display: flex;
   flex-direction: column;
   gap: 1rem;
+}
+
+/* Ostatni panel w bocznej kolumnie dociąga się do dołu. */
+.side > .panel:last-child {
+  flex: 1;
 }
 </style>
