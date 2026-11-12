@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router'
 
 import * as accountApi from '@/api/account'
 import FormField from '@/components/FormField.vue'
+import PlayerName from '@/components/PlayerName.vue'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
@@ -124,7 +125,8 @@ onMounted(async () => {
           <span v-else class="status off">nieaktywne</span>
         </p>
         <p v-if="account.is_active_profile">
-          Powiązany nick: <strong>{{ account.full_nickname }}</strong>
+          Powiązany nick:
+          <strong><PlayerName :nickname="account.nickname" :console-type="account.console" /></strong>
         </p>
         <template v-else>
           <p class="muted">

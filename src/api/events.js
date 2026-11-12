@@ -1,12 +1,12 @@
 import { request } from './client'
 
 /**
- * @typedef {{ id: number, title: string, author: string, description: string,
+ * @typedef {{ id: number, title: string, author: string|null, author_console: 'x'|'p'|null, description: string,
  *   start_date: string, end_date: string, tank_type: string, tank_tier: number,
  *   is_finished: boolean, participants_count?: number,
  *   top3?: LeaderboardRow[], my_result?: LeaderboardRow|null }} Event
  * (participants_count, top3 i my_result zwracają events/ i events/{id}/)
- * @typedef {{ place: number|null, profile_id: number, nickname: string, best_damage: number|null,
+ * @typedef {{ place: number|null, profile_id: number, nickname: string, console: 'x'|'p', best_damage: number|null,
  *   best_tank: import('./profiles').Tank|null, best_damage_date: string|null }} LeaderboardRow
  */
 
@@ -39,7 +39,7 @@ export const getEvent = (eventId) => request(`events/${eventId}/`)
 
 /**
  * Ostatnie bitwy w evencie: moje i innych graczy (łącznie, nie po kilka od każdego).
- * @typedef {{ profile_id: number, nickname: string, tank: import('./profiles').Tank, damage: number,
+ * @typedef {{ profile_id: number, nickname: string, console: 'x'|'p', tank: import('./profiles').Tank, damage: number,
  *   damage_date: string|null }} Battle
  * @param {number|string} eventId
  * @param {number} [limit] ile bitew w każdej liście (backend: domyślnie 5, max 20)

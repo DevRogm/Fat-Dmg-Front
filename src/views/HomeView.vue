@@ -72,10 +72,10 @@ const status = computed(() => {
   return auth.isActive ? 'active' : 'inactive'
 })
 
-const myNickname = computed(() => auth.profile?.full_nickname ?? null)
+const myProfileId = computed(() => auth.profile?.id ?? null)
 
 const myIndex = computed(() =>
-  myNickname.value ? leaderboard.value.findIndex((r) => r.nickname === myNickname.value) : -1,
+  myProfileId.value ? leaderboard.value.findIndex((r) => r.profile_id === myProfileId.value) : -1,
 )
 const myRow = computed(() => (myIndex.value >= 0 ? leaderboard.value[myIndex.value] : null))
 // Miejsce pokazujemy tylko wtedy, gdy gracz ma już jakiś wynik w evencie.
@@ -120,7 +120,7 @@ const myPosition = computed(() =>
       <!-- Tabela, wynik i bitwy mają sens tylko wtedy, gdy trwa event -->
       <template v-if="event">
         <div class="area-board">
-          <LeaderboardTable :rows="leaderboard" :highlight-nickname="myNickname" :page-size="10" />
+          <LeaderboardTable :rows="leaderboard" :highlight-profile-id="myProfileId" :page-size="10" />
         </div>
 
         <div class="area-battles side">

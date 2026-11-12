@@ -24,7 +24,7 @@ const status = computed(() => {
 const top = computed(() => props.event.top3 ?? [])
 const mine = computed(() => props.event.my_result ?? null)
 const mineInTop = computed(
-  () => !!mine.value && top.value.some((row) => row.nickname === mine.value.nickname),
+  () => !!mine.value && top.value.some((row) => row.profile_id === mine.value.profile_id),
 )
 </script>
 
@@ -52,14 +52,18 @@ const mineInTop = computed(
     <ol v-if="top.length" class="rows" aria-label="Najlepsza trójka">
       <li
         v-for="row in top"
-        :key="row.nickname"
+        :key="row.profile_id"
         class="row"
-        :class="{ me: row.nickname === mine?.nickname }"
+        :class="{ me: row.profile_id === mine?.profile_id }"
       >
         <span class="place">{{ row.place ?? '—' }}</span>
         <span class="who">
           <strong class="nick">
-            <PlayerLink :profile-id="row.profile_id" :nickname="row.nickname" />
+            <PlayerLink
+              :profile-id="row.profile_id"
+              :nickname="row.nickname"
+              :console-type="row.console"
+            />
           </strong>
           <TankBadge :tank="row.best_tank" />
         </span>
@@ -75,7 +79,11 @@ const mineInTop = computed(
           <span class="place">{{ mine.place ?? '—' }}</span>
           <span class="who">
             <strong class="nick">
-              <PlayerLink :profile-id="mine.profile_id" :nickname="mine.nickname" />
+              <PlayerLink
+                :profile-id="mine.profile_id"
+                :nickname="mine.nickname"
+                :console-type="mine.console"
+              />
             </strong>
             <TankBadge :tank="mine.best_tank" />
           </span>

@@ -5,6 +5,7 @@ import { RouterLink, useRouter } from 'vue-router'
 import * as profilesApi from '@/api/profiles'
 import BestResultTile from '@/components/BestResultTile.vue'
 import PaginationBar from '@/components/PaginationBar.vue'
+import PlayerName from '@/components/PlayerName.vue'
 import PlayerSearch from '@/components/PlayerSearch.vue'
 import TankBadge from '@/components/TankBadge.vue'
 import TopScoresTable from '@/components/TopScoresTable.vue'
@@ -131,7 +132,13 @@ function placeLabel(row) {
 
     <template v-else-if="stats">
       <header class="player">
-        <h2>{{ stats.profile.full_nickname ?? 'Gracz bez nicku' }}</h2>
+        <h2>
+          <PlayerName
+            :nickname="stats.profile.nickname"
+            :console-type="stats.profile.console"
+            fallback="Gracz bez nicku"
+          />
+        </h2>
         <span v-if="stats.profile.console" class="muted">
           {{ formatConsole(stats.profile.console) }}
         </span>

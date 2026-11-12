@@ -3,6 +3,7 @@ import { computed, ref, watch } from 'vue'
 import { RouterLink, useRoute, useRouter } from 'vue-router'
 
 import logo from '@/assets/logo.webp'
+import PlayerName from '@/components/PlayerName.vue'
 import { useAuthStore } from '@/stores/auth'
 
 const auth = useAuthStore()
@@ -13,7 +14,6 @@ const menuOpen = ref(false)
 
 // Profil załadowany, ale jeszcze nieaktywny (profil == null np. przy błędzie sieci)
 const needsActivation = computed(() => auth.isAuthenticated && !!auth.profile && !auth.isActive)
-const displayName = computed(() => auth.profile?.full_nickname ?? 'Nowy gracz')
 
 watch(
   () => route.fullPath,
@@ -63,7 +63,13 @@ async function logout() {
 
         <div class="nav-user">
           <template v-if="auth.isAuthenticated">
-            <span class="user-name">{{ displayName }}</span>
+            <span class="user-name">
+              <PlayerName
+                :nickname="auth.profile?.nickname"
+                :console-type="auth.profile?.console"
+                fallback="Nowy gracz"
+              />
+            </span>
             <span v-if="needsActivation" class="badge">nieaktywny</span>
             <button class="btn btn-secondary btn-small" type="button" @click="logout">
               Wyloguj

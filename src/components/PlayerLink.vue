@@ -1,10 +1,13 @@
 <script setup>
 import { RouterLink } from 'vue-router'
 
+import PlayerName from '@/components/PlayerName.vue'
+
 defineProps({
   /** Id profilu; gdy brak, pokazujemy sam nick bez linku. */
   profileId: { type: Number, default: null },
   nickname: { type: String, required: true },
+  consoleType: { type: String, default: null },
 })
 </script>
 
@@ -14,9 +17,9 @@ defineProps({
     class="player-link"
     :to="{ name: 'stats', params: { id: profileId } }"
   >
-    {{ nickname }}
+    <PlayerName :nickname="nickname" :console-type="consoleType" />
   </RouterLink>
-  <span v-else>{{ nickname }}</span>
+  <PlayerName v-else :nickname="nickname" :console-type="consoleType" />
 </template>
 
 <style scoped>
@@ -30,6 +33,5 @@ defineProps({
 
 .player-link:hover {
   color: var(--accent);
-  text-decoration: underline;
 }
 </style>

@@ -3,6 +3,7 @@ import { onUnmounted, ref, watch } from 'vue'
 import { RouterLink, useRouter } from 'vue-router'
 
 import * as profilesApi from '@/api/profiles'
+import PlayerName from '@/components/PlayerName.vue'
 
 const MIN_LENGTH = 2
 const DEBOUNCE_MS = 300
@@ -97,7 +98,7 @@ onUnmounted(() => clearTimeout(timer))
         <ul class="results">
           <li v-for="profile in results" :key="profile.id">
             <RouterLink :to="{ name: 'stats', params: { id: profile.id } }" @click="clear">
-              {{ profile.full_nickname }}
+              <PlayerName :nickname="profile.nickname" :console-type="profile.console" />
             </RouterLink>
           </li>
         </ul>

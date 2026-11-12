@@ -3,6 +3,7 @@ import { computed, onMounted, ref } from 'vue'
 
 import * as newsApi from '@/api/news'
 import PaginationBar from '@/components/PaginationBar.vue'
+import PlayerName from '@/components/PlayerName.vue'
 import { formatDateTime } from '@/utils/format'
 
 const PAGE_SIZE = 10 // musi się zgadzać z NewsPagination.page_size w backendzie
@@ -52,7 +53,9 @@ onMounted(() => load(1))
         <h2>{{ post.title }}</h2>
         <p class="muted">
           <time :datetime="post.published_at">{{ formatDateTime(post.published_at) }}</time>
-          <template v-if="post.author"> · Autor: {{ post.author }}</template>
+          <template v-if="post.author">
+            · Autor: <PlayerName :nickname="post.author" :console-type="post.author_console" />
+          </template>
         </p>
         <p class="content">{{ post.content }}</p>
       </article>

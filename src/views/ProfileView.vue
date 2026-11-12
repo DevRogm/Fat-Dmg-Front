@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router'
 
 import * as profilesApi from '@/api/profiles'
 import BestResultTile from '@/components/BestResultTile.vue'
+import PlayerName from '@/components/PlayerName.vue'
 import { useAuthStore } from '@/stores/auth'
 import { formatConsole } from '@/utils/format'
 
@@ -69,7 +70,7 @@ watch(() => [profile.value?.id, profile.value?.is_active], loadScores, { immedia
         <dl class="details">
           <div>
             <dt>Nick</dt>
-            <dd>{{ profile.full_nickname ?? '—' }}</dd>
+            <dd><PlayerName :nickname="profile.nickname" :console-type="profile.console" /></dd>
           </div>
           <div>
             <dt>Konsola</dt>

@@ -8,8 +8,8 @@ import { formatNumber } from '@/utils/format'
 const props = defineProps({
   /** @type {import('vue').PropType<import('@/api/events').LeaderboardRow[]>} */
   rows: { type: Array, default: () => [] },
-  /** Nick zalogowanego gracza – jego wiersz jest wyróżniony. */
-  highlightNickname: { type: String, default: null },
+  /** Id profilu zalogowanego gracza – jego wiersz jest wyróżniony. */
+  highlightProfileId: { type: Number, default: null },
   /** Ile wierszy pokazać (Top N, bez stron); null = wszystkie. Ignorowane z pageSize. */
   limit: { type: Number, default: 20 },
   /** Gdy ustawione: tabela jest dzielona na strony po tyle wierszy. */
@@ -71,14 +71,18 @@ const caption = computed(() => {
           <tbody>
             <tr
               v-for="(row, index) in visibleRows"
-              :key="row.nickname"
-              :class="{ me: row.nickname === highlightNickname }"
+              :key="row.profile_id"
+              :class="{ me: row.profile_id === highlightProfileId }"
             >
               <td class="num place">
                 {{ row.best_damage == null ? '—' : (row.place ?? offset + index + 1) }}
               </td>
               <td class="nickname">
-                <PlayerLink :profile-id="row.profile_id" :nickname="row.nickname" />
+                <PlayerLink
+                  :profile-id="row.profile_id"
+                  :nickname="row.nickname"
+                  :console-type="row.console"
+                />
               </td>
               <td class="num damage">{{ formatNumber(row.best_damage) }}</td>
               <td><TankBadge :tank="row.best_tank" /></td>

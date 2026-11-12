@@ -73,7 +73,7 @@ onMounted(() => {
 onUnmounted(() => clearInterval(pollId))
 
 const mine = computed(() => event.value?.my_result ?? null)
-const myNickname = computed(() => auth.profile?.full_nickname ?? null)
+const myProfileId = computed(() => auth.profile?.id ?? null)
 const loginLink = computed(() => ({ name: 'login', query: { redirect: route.fullPath } }))
 </script>
 
@@ -139,7 +139,7 @@ const loginLink = computed(() => ({ name: 'login', query: { redirect: route.full
         <p v-if="error" class="alert" role="alert">{{ error }}</p>
         <LeaderboardTable
           :rows="leaderboard"
-          :highlight-nickname="myNickname"
+          :highlight-profile-id="myProfileId"
           :page-size="20"
           title="Pełna tabela wyników"
         />

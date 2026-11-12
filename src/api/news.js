@@ -1,7 +1,7 @@
 import { request } from './client'
 
 /**
- * @typedef {{ id: number, title: string, content: string, published_at: string, author: string|null }} NewsPost
+ * @typedef {{ id: number, title: string, content: string, published_at: string, author: string|null, author_console: 'x'|'p'|null }} NewsPost
  */
 
 /**

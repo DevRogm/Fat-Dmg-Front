@@ -4,6 +4,7 @@ import { RouterLink } from 'vue-router'
 
 import * as profilesApi from '@/api/profiles'
 import FormField from '@/components/FormField.vue'
+import PlayerName from '@/components/PlayerName.vue'
 import { useNow } from '@/composables/useNow'
 import { useAuthStore } from '@/stores/auth'
 import { formatDuration, formatNation, formatTankType, formatTier } from '@/utils/format'
@@ -22,7 +23,8 @@ const errors = reactive({ nickname: '', console: '' })
 const formError = ref('')
 const starting = ref(false)
 // Nick podany w tej sesji (backend nie zwraca go w opisie wyzwania).
-const startedFor = ref('')
+/** @type {import('vue').Ref<{ nickname: string, console: string }|null>} */
+const startedFor = ref(null)
 
 const verifying = ref(false)
 const verifyError = ref('')
@@ -59,7 +61,7 @@ async function start() {
       nickname: nick,
       console: consoleType.value,
     })
-    startedFor.value = `${nick}-${consoleType.value}`
+    startedFor.value = { nickname: nick, console: consoleType.value }
     verifyError.value = ''
   } catch (e) {
     const fields = e.fieldErrors ?? {}
@@ -99,10 +101,18 @@ function restart() {
     <!-- Profil aktywny -->
     <div v-else-if="auth.isActive" class="stack">
       <p v-if="justActivated" class="success" role="status">
-        Gotowe! Profil <strong>{{ auth.profile?.full_nickname }}</strong> został aktywowany.
+        Gotowe! Profil
+        <strong
+          ><PlayerName :nickname="auth.profile?.nickname" :console-type="auth.profile?.console"
+        /></strong>
+        został aktywowany.
       </p>
       <p v-else>
-        Twój profil <strong>{{ auth.profile?.full_nickname }}</strong> jest już aktywny.
+        Twój profil
+        <strong
+          ><PlayerName :nickname="auth.profile?.nickname" :console-type="auth.profile?.console"
+        /></strong>
+        jest już aktywny.
       </p>
       <RouterLink class="btn link-btn" :to="{ name: 'home' }">Przejdź do eventu</RouterLink>
     </div>
@@ -110,8 +120,9 @@ function restart() {
     <!-- Aktywacja w toku -->
     <div v-else-if="challenge && !expired" class="stack">
       <p>
-        Żeby potwierdzić, że to Twoje konto{{ startedFor ? ` (${startedFor})` : '' }}, zagraj bitwę
-        wylosowanym czołgiem.
+        Żeby potwierdzić, że to Twoje konto<template v-if="startedFor">
+          (<PlayerName :nickname="startedFor.nickname" :console-type="startedFor.console" />)</template
+        >, zagraj bitwę wylosowanym czołgiem.
       </p>
 
       <div class="tank-card">

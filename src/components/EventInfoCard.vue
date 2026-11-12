@@ -3,6 +3,7 @@ import { computed } from 'vue'
 
 import { useNow } from '@/composables/useNow'
 import { formatDateTime, formatDuration, formatTankType, formatTier } from '@/utils/format'
+import PlayerName from '@/components/PlayerName.vue'
 
 const props = defineProps({
   /** @type {import('vue').PropType<import('@/api/events').Event|null>} */
@@ -68,7 +69,9 @@ const phase = computed(() => {
         <slot name="footer" />
       </div>
 
-      <p class="muted author">Organizator: {{ event.author }}</p>
+      <p class="muted author">
+        Organizator: <PlayerName :nickname="event.author" :console-type="event.author_console" />
+      </p>
     </template>
 
     <template v-else>

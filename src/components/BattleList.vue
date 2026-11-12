@@ -23,7 +23,12 @@ defineProps({
       </div>
       <div class="meta muted">
         <template v-if="showNickname">
-          <PlayerLink :profile-id="battle.profile_id" :nickname="battle.nickname" /> ·
+          <PlayerLink
+            :profile-id="battle.profile_id"
+            :nickname="battle.nickname"
+            :console-type="battle.console"
+          />
+          ·
         </template>
         <template v-if="battle.event">{{ battle.event }} · </template>
         {{ formatDateTime(battle.damage_date) }}
